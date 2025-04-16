@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using ProductCategory.Models;
 using ProductCategory.Services.Interfaces;
 using System.Threading.Tasks;
@@ -20,11 +21,11 @@ namespace ProductCategory.Controllers
         }
 
         // GET: Productos
-        public async Task<IActionResult> Index(int? pageNumber)
+        public async Task<IActionResult> Index(int? pageNumber, int? pageSize)
         {
-            int pageSize = 5;
+            int size = pageSize ?? 15; // Valor en 15, no es mucho ni poco.
             var productos = _productoService.ObtenerTodosProductosQueryable();
-            return View(await PaginatedList<Producto>.CreateAsync(productos, pageNumber ?? 1, pageSize));
+            return View(await PaginatedList<Producto>.CreateAsync(productos.AsNoTracking(), pageNumber ?? 1, size));
         }
 
         // GET: Productos/Details/5
@@ -192,13 +193,16 @@ namespace ProductCategory.Controllers
         {
             if (string.IsNullOrEmpty(searchString))
             {
+                TempData["Warning"] = "Debe ingresar un término de búsqueda";
                 return RedirectToAction(nameof(Index));
             }
 
-            int pageSize = 5;
+            int pageSize = 15;
             var productos = _productoService.BuscarProductosQueryable(searchString);
 
             ViewBag.SearchString = searchString;
+            ViewBag.ResultCount = await productos.CountAsync();
+
             return View("Index", await PaginatedList<Producto>.CreateAsync(productos, pageNumber ?? 1, pageSize));
         }
     }

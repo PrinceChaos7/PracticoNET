@@ -38,7 +38,7 @@ namespace ProductCategory.Services.Implementations
             var productoExistente = await _context.Productos.FindAsync(producto.Id);
             if (productoExistente == null)
                 throw new InvalidOperationException("Producto no encontrado");
-
+            //Regla de negocio
             if (await NombreProductoExisteEnCategoriaAsync(producto.Nombre, producto.CategoriaId, producto.Id))
                 throw new InvalidOperationException("Ya existe un producto con este nombre en la categoría seleccionada");
 
@@ -94,9 +94,18 @@ namespace ProductCategory.Services.Implementations
 
         public IQueryable<Producto> BuscarProductosQueryable(string searchString)
         {
+            if (string.IsNullOrWhiteSpace(searchString))
+            {
+                return ObtenerTodosProductosQueryable();
+            }
+
+            searchString = searchString.Trim().ToLower();
+
             return _context.Productos
                 .Include(p => p.Categoria)
-                .Where(p => p.Nombre.Contains(searchString) || p.Descripcion.Contains(searchString))
+                .Where(p => p.Nombre.ToLower().Contains(searchString) ||
+                           p.Descripcion.ToLower().Contains(searchString) ||
+                           p.Categoria.Nombre.ToLower().Contains(searchString))
                 .OrderBy(p => p.Nombre);
         }
     }
