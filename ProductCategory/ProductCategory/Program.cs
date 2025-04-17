@@ -13,11 +13,11 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 
-// Configuración de la base de datos en memoria
+// Reemplaza la configuración de la base de datos.
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseInMemoryDatabase("ProductCategoryDB")
-          .EnableDetailedErrors()  // Para mejor diagnóstico
-          .EnableSensitiveDataLogging());  // Muestra valores de parámetros
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+          .EnableDetailedErrors()
+          .EnableSensitiveDataLogging());
 
 var app = builder.Build();
 
