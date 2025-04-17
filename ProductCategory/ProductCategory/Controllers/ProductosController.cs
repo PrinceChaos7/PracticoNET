@@ -23,7 +23,7 @@ namespace ProductCategory.Controllers
         // GET: Productos
         public async Task<IActionResult> Index(int? pageNumber, int? pageSize)
         {
-            int size = pageSize ?? 15; // Valor en 15, no es mucho ni poco.
+            int size = pageSize ?? 10; // Valor en 15, no es mucho ni poco.
             var productos = _productoService.ObtenerTodosProductosQueryable();
             return View(await PaginatedList<Producto>.CreateAsync(productos.AsNoTracking(), pageNumber ?? 1, size));
         }
@@ -197,7 +197,7 @@ namespace ProductCategory.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            int pageSize = 15;
+            int pageSize = 10;
             var productos = _productoService.BuscarProductosQueryable(searchString);
 
             ViewBag.SearchString = searchString;

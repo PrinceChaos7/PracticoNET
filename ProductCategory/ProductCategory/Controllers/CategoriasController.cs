@@ -18,7 +18,7 @@ namespace ProductCategory.Controllers
         // GET: Categorias
         public async Task<IActionResult> Index(int? pageNumber, int? pageSize)
         {
-            int size = pageSize ?? 15; // 15 items por defecto
+            int size = pageSize ?? 10; // 10 items por defecto
             var categorias = _categoriaService.ObtenerTodasCategoriasQueryable();
             return View(await PaginatedList<Categoria>.CreateAsync(categorias.AsNoTracking(), pageNumber ?? 1, size));
         }
@@ -153,7 +153,7 @@ namespace ProductCategory.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            int pageSize = 15; // Cambiado de 5 a 15 para consistencia
+            int pageSize = 10; // Cambiado a 10 para consistencia
             var categorias = _categoriaService.BuscarCategoriasQueryable(searchString);
 
             ViewBag.SearchString = searchString;
