@@ -3,13 +3,46 @@ using Microsoft.EntityFrameworkCore;
 using ProductCategory.Models;
 using ProductCategory.Services.Interfaces;
 using ProductCategory.Services.Implementations;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//Para evitar bucles de referencia circular en los modelos
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.WriteIndented = true;
+});
 
 // Configuración de servicios
 builder.Services.AddControllersWithViews();
 
-// Registrar servicios de la capa de negocio
+// Agregar servicios para API
+builder.Services.AddControllers();
+
+// Configurar Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "ProductCategory API",
+        Version = "v1",
+        Description = "API para gestión de productos y categorías"
+    });
+
+    // Configura Swagger para usar los comentarios XML (opcional)
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
+});
+
+// Registrar servicios de la capa de negocio.
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 
@@ -33,9 +66,19 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
 
+// Configurar Swagger UI
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProductCategory API V1");
+});
+
+// Configuración de endpoints
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllers(); // Esto es necesario para los endpoints API
 
 // Inicialización de datos de prueba
 await InitializeTestData(app);
