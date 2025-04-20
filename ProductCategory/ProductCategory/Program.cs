@@ -52,6 +52,19 @@ builder.Services.AddDbContext<AppDbContext>(options =>
           .EnableDetailedErrors()
           .EnableSensitiveDataLogging());
 
+
+// Configuración CORS - Agregue para el Frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactDevelopment", builder =>
+    {
+        builder.WithOrigins("http://localhost:3000") // URL de tu frontend React
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+               .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 // Configurar pipeline HTTP
@@ -64,6 +77,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseCors("ReactDevelopment");    //Agregue esta linea para el Frontend
 app.UseAuthorization();
 
 // Configurar Swagger UI
